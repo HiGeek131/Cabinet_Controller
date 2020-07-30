@@ -24,9 +24,7 @@ public class Main {
     public static void main(String[] args) {
         try {
             InputStream inputStream = new FileInputStream("/sys/class/thermal/thermal_zone0/temp");
-            int fileSize = inputStream.available();
-
-            for(int i = 0; i < fileSize; i++) {
+            for(int i = 0; i < 5; i++) {
                 System.out.print((char) inputStream.read());
             }
             inputStream.close();
