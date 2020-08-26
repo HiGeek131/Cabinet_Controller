@@ -15,21 +15,11 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
+import java.util.Arrays;
 
 public class Main {
     public static void main(String[] args) {
-        try {
-            InputStream inputStream = new FileInputStream("/sys/class/thermal/thermal_zone0/temp");
-            for(int i = 0; i < 5; i++) {
-                System.out.print((char) inputStream.read());
-            }
-            inputStream.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        System.out.println(FileTool.readFile("/sys/class/thermal/thermal_zone0/temp"));
     }
 }
