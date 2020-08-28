@@ -52,7 +52,7 @@ class MyThread extends Thread {
 
         while (true) {
             System.out.println(this.name + "RUN");
-            
+
             try {
                 Thread.sleep(1000);
             } catch (InterruptedException e) {
