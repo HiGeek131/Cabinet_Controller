@@ -18,14 +18,16 @@
 import java.io.*;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.sql.DatabaseMetaData;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.Arrays;
 
 public class Main {
-    public static final String db_url = "jbdc:mysql://192.168.2.221:3306/gary_db?useSSL=false";
+    public static final String db_url = "jdbc:mysql://192.168.2.221:3306/gary_db?useSSL=false";
     public static final String db_user = "test";
     public static final String sb_password = "";
     public static void main(String[] args) {
-        System.out.println(FileTool.readFile("/sys/class/thermal/thermal_zone0/temp"));
         MyThread myThread = new MyThread("test1");
         myThread.start();
     }
@@ -46,14 +48,63 @@ class MyThread extends Thread {
         } catch (UnknownHostException e) {
             e.printStackTrace();
         }
+        hostName = hostName.replaceAll("[^a-zA-Z0-9_]", "");
         if (! hostName.isEmpty()) {
             System.out.println("Host Name:" + hostName);
         }
+        MySQL mySQL = new MySQL(Main.db_url, Main.db_user, Main.sb_password);
 
+        for (int i = 0; i < 10; i++) {
+            if (mySQL.connect()) {
+                System.out.println("mysql connect success");
+                break;
+            }
+            System.out.println("mysql connect fail " + i);
+            try {
+                Thread.sleep(5000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+        if (!mySQL.isConnect()) {
+            System.out.println("mysql connect error,please cheek network");
+            while (true);
+        }
+//        String mysqlCommand = String.format("create table if not exists '%s' ('temp' float, 'time' timestamp)", hostName);
+//        ResultSet resultSet = mySQL.executeQueue(mysqlCommand);
+//        resultSet.
+
+        try {
+            DatabaseMetaData databaseMetaData = mySQL.connection.getMetaData();
+            ResultSet resultSet = databaseMetaData.getTables(null, null, hostName, null);
+            if(resultSet.next()) {
+                System.out.println("the table is existed");
+            }
+            else {
+                System.out.println("the table is not exists");
+                System.out.println("create new table named " + hostName);
+                String mysqlCommand = String.format("create table %s("
+                        + "temp float not null,"
+                        + "cpu float not null,"
+                        + "ram float not null,"
+                        + "disk float not null,"
+                        + "time timestamp not null);"
+                        , hostName);
+                System.out.println(mysqlCommand);
+                if (mySQL.executeUpdate(mysqlCommand) == 0) {
+                    System.out.println("create success");
+                } else {
+                    System.out.println("create fail");
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
         while (true) {
             System.out.println(this.name + "RUN");
+            System.out.println(FileTool.readFile("/sys/class/thermal/thermal_zone0/temp"));
 
-            try {
+            try {       //延时
                 Thread.sleep(1000);
             } catch (InterruptedException e) {
                 e.printStackTrace();

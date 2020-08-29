@@ -18,8 +18,8 @@
 import java.sql.*;
 
 public class MySQL {
-    private Connection connection = null;
-    private Statement statement = null;
+    Connection connection = null;
+    Statement statement = null;
     ResultSet resultSet = null;
     private String dbUrl, dbUser, dbPasswd;
 
@@ -29,11 +29,12 @@ public class MySQL {
         dbPasswd = passwd;
     }
 
-    boolean sqlConnect() {
+    boolean connect() {
         try {
             Class.forName("com.mysql.cj.jdbc.Driver");
+            System.out.println("connect to mysql");
             connection = DriverManager.getConnection(dbUrl, dbUser, dbPasswd);
-            statement = ((Connection) connection).createStatement();
+            statement = connection.createStatement();
             return true;
         } catch (ClassNotFoundException | SQLException e) {
             e.printStackTrace();
@@ -41,23 +42,38 @@ public class MySQL {
         }
     }
 
-    boolean sqlClose() {
-        if (connection == null) {
-            System.out.println("Sql未连接");
-            return false;
-        }
+    boolean isConnect() {
         try {
-            statement.close();
-            connection.close();
-            return true;
+            if (connection.isClosed()) {
+                return false;
+            } else {
+                return true;
+            }
         } catch (SQLException e) {
             e.printStackTrace();
-            System.out.println("Sql连接关闭失败");
-            return false;
+        }
+        return false;
+    }
+
+    void close() {
+        try {
+            if (statement != null) {
+                statement.close();
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        try {
+            if (connection != null) {
+                connection.close();
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
     }
 
-    ResultSet sqlExecuteQueue(String sqlExecute) {
+    ResultSet executeQueue(String sqlExecute) {
         boolean states;
         try {
             resultSet = statement.executeQuery(sqlExecute);
@@ -68,7 +84,7 @@ public class MySQL {
         }
     }
 
-    int sqlExecuteUpdate(String sqlExecute) {
+    int executeUpdate(String sqlExecute) {
         try {
             return statement.executeUpdate(sqlExecute);
         } catch (SQLException e) {
