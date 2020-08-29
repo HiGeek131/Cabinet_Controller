@@ -84,10 +84,10 @@ class MyThread extends Thread {
                 System.out.println("the table is not exists");
                 System.out.println("create new table named " + hostName);
                 String mysqlCommand = String.format("create table %s("
-                        + "temp float not null,"
-                        + "cpu float not null,"
-                        + "ram float not null,"
-                        + "disk float not null,"
+                        + "temp int not null,"
+                        + "cpu int not null,"
+                        + "ram int not null,"
+                        + "disk int not null,"
                         + "time timestamp not null);"
                         , hostName);
                 System.out.println(mysqlCommand);
@@ -100,9 +100,15 @@ class MyThread extends Thread {
         } catch (SQLException e) {
             e.printStackTrace();
         }
+        String resultString;
+        int temp;
         while (true) {
-            System.out.println(this.name + "RUN");
-            System.out.println(FileTool.readFile("/sys/class/thermal/thermal_zone0/temp"));
+            resultString = FileTool.readFile("/sys/class/thermal/thermal_zone0/temp");
+            if (resultString != null) {
+                temp = Integer.parseInt(resultString);
+                temp /= 1000;
+                System.out.println(temp);
+            }
 
             try {       //延时
                 Thread.sleep(1000);
